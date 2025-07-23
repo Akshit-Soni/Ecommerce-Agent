@@ -6,8 +6,8 @@ A FastAPI-based agent that translates natural language queries into SQL to inter
 
 *   **Natural Language to SQL Translation**: Uses the Groq API with Llama 3 to convert user questions into executable SQL queries.
 *   **FastAPI Backend**: A robust backend serving the UI and handling API requests with rate limiting.
-*   **Dynamic Visualizations**: Generates charts (bar, pie, line) based on the query results using Matplotlib.
-*   **Simple Web Interface**: A clean and simple UI for asking questions and viewing results.
+*   **Dynamic Visualizations**: Generates charts (bar, pie, line) based on the query results using Matplotlib.(In progress)
+*   **Simple Web Interface**: A clean and simple UI for asking questions and viewing results.(In progress)
 
 ## Tech Stack
 
