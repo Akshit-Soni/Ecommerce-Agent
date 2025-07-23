@@ -20,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 
 from config.settings import settings
 from db.connection import db
-from llm.sql_translator import translator
+from llm.sql_translator import ModelProvider, translate_to_sql, analyze_visualization
 from visualizer.plotter import plotter
 
 # Configure logging
@@ -41,6 +41,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 class Question(BaseModel):
     """Request model for questions."""
     question: str
+    provider: Optional[ModelProvider] = None
     enable_viz: bool = True
     stream_response: bool = False
 
@@ -77,7 +78,7 @@ async def ask_question(request: Request, question: Question):
             )
         
         # Generate SQL
-        sql, metadata = await translator.translate_to_sql(question.question)
+        sql, metadata = await translate_to_sql(question.question, provider=question.provider)
         if not sql:
             raise HTTPException(status_code=400, detail="Failed to generate SQL query")
         
@@ -88,8 +89,9 @@ async def ask_question(request: Request, question: Question):
         # Check if visualization is needed
         viz_base64 = None
         if question.enable_viz and settings.enable_visualization:
-            viz_config_str = await translator.analyze_visualization(
-                question.question, str(result_dict))
+            viz_config_str = await analyze_visualization(
+                question.question, str(result_dict), provider=question.provider
+            )
             try:
                 viz_config = json.loads(viz_config_str)
                 if viz_config.get("needs_visualization"):
@@ -129,7 +131,7 @@ async def stream_response(question: str) -> str:
         str: Response chunks
     """
     # Generate SQL
-    sql, metadata = await translator.translate_to_sql(question)
+    sql, metadata = await translate_to_sql(question)
     if not sql:
         yield json.dumps({"error": "Failed to generate SQL query"})
         return

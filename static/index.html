@@ -111,6 +111,11 @@
     <div id="container">
         <h1>E-commerce AI Agent</h1>
         <textarea id="question" rows="4" placeholder="Ask a question about your e-commerce data..."></textarea>
+        <select id="provider" style="margin-bottom: 10px; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="groq">Groq</option>
+            <option value="ollama">Ollama (gemma:2b)</option>
+            <option value="gemini">Gemini</option>
+        </select>
         <button onclick="askQuestion()">Ask</button>
         <div id="result">
             <h2>SQL Query</h2>
@@ -124,12 +129,13 @@
     <script>
         async function askQuestion() {
             const question = document.getElementById('question').value;
+            const provider = document.getElementById('provider').value;
             const response = await fetch('/api/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ question })
+                body: JSON.stringify({ question, provider })
             });
 
             const data = await response.json();

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     
     # LLM API Keys
     groq_api_key: str = Field(..., description="Groq API key")
-    gemini_api_key: str = Field(None, description="Gemini API key")
+    gemini_api_key: str = Field(..., description="Gemini API key")
     
     # Database
     db_path: str = Field("sqlite:///ecom_data.db", description="SQLite database path")
@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     enable_streaming: bool = Field(False, description="Enable response streaming")
     
     # Model Configuration
+    ollama_base_url: str = Field("http://localhost:11434", description="Ollama base URL")
     default_model: Literal["groq", "gemini", "ollama"] = Field(
         "groq", description="Default LLM model")
     model_timeout: int = Field(30, description="Model API timeout in seconds")
