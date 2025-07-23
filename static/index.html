@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce AI Agent</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #444;
+        }
+
+        #container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 80%;
+            max-width: 800px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        #result h2 {
+            color: #444;
+        } 
+
+        #sql-query {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #json-result {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #plot {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #plot img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>E-commerce AI Agent</h1>
+        <textarea id="question" rows="4" placeholder="Ask a question about your e-commerce data..."></textarea>
+        <button onclick="askQuestion()">Ask</button>
+        <div id="result">
+            <h2>SQL Query</h2>
+            <pre id="sql-query">...</pre>
+            <h2>Result</h2>
+            <pre id="json-result">...</pre>
+            <div id="plot"></div>
+        </div>
+    </div>
+
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            const response = await fetch('/api/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question })
+            });
+
+            const data = await response.json();
+
+            document.getElementById('sql-query').textContent = data.sql_query;
+            
+            const jsonResultDiv = document.getElementById('json-result');
+            jsonResultDiv.innerHTML = ''; // Clear previous results
+
+            if (data.result && Array.isArray(data.result) && data.result.length > 0) {
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const tbody = document.createElement('tbody');
+                const headers = Object.keys(data.result[0]);
+                
+                const headerRow = document.createElement('tr');
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                data.result.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    headers.forEach(header => {
+                        const td = document.createElement('td');
+                        let value = rowData[header];
+                        if (typeof value === 'number') {
+                            value = parseFloat(value.toFixed(4));
+                        }
+                        td.textContent = value;
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                jsonResultDiv.appendChild(table);
+            } else {
+                jsonResultDiv.textContent = JSON.stringify(data.result, null, 2);
+            }
+
+            const plotDiv = document.getElementById('plot');
+            if (data.plot) {
+                plotDiv.innerHTML = `<img src="data:image/png;base64,${data.plot}" alt="Data Plot">`;
+            } else {
+                plotDiv.innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
